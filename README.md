@@ -3,6 +3,7 @@
 > Your AI coding agent has been quietly saving your API keys to disk. Find them. Scrub them.
 
 [![CI](https://github.com/Thomas-E-Lewis/agentleaks/actions/workflows/ci.yml/badge.svg)](https://github.com/Thomas-E-Lewis/agentleaks/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/agentleaks.svg)](https://crates.io/crates/agentleaks)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Claude Code, Codex, Gemini CLI and aider persist every session to plaintext files in your home directory: every prompt, every tool result, every `cat .env` you or the agent ever ran. If a secret was ever on screen, it is still on disk. Generic scanners like gitleaks don't know where these stores live, and they can only report, not clean.
@@ -31,11 +32,11 @@ Secrets are always shown masked (`--unmask` to reveal, `--format json` for machi
 
 ## Install
 
-Prebuilt binaries for Windows, macOS and Linux are on the [releases page](https://github.com/Thomas-E-Lewis/agentleaks/releases). Or with Rust:
+```
+cargo install agentleaks
+```
 
-```
-cargo install --locked --git https://github.com/Thomas-E-Lewis/agentleaks
-```
+Prebuilt binaries for Windows, macOS and Linux are on the [releases page](https://github.com/Thomas-E-Lewis/agentleaks/releases).
 
 ## What it scans
 
