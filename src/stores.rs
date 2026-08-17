@@ -293,6 +293,85 @@ fn is_own_artifact(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// A scrub backup file: `<original>.agentleaks-<stamp>.bak`.
+fn is_backup(path: &Path) -> bool {
+    path.file_name()
+        .map(|n| {
+            let n = n.to_string_lossy();
+            n.contains(".agentleaks-") && n.ends_with(".bak")
+        })
+        .unwrap_or(false)
+}
+
+/// Locate every scrub backup next to the known stores. Backups of
+/// single-file stores sit as siblings in the store's parent directory,
+/// so directory walks alone would miss them.
+pub fn find_backups(home: &Path, project_dir: &Path) -> Vec<PathBuf> {
+    let mut out: Vec<PathBuf> = Vec::new();
+    for spec in STORES {
+        let base = match spec.base {
+            Base::Home => home,
+            Base::Project => project_dir,
+        };
+        let root = base.join(spec.rel);
+        match spec.kind {
+            Kind::Dir => {
+                if root.is_dir() {
+                    out.extend(
+                        WalkDir::new(&root)
+                            .follow_links(false)
+                            .into_iter()
+                            .filter_map(Result::ok)
+                            .filter(|e| e.file_type().is_file())
+                            .map(|e| e.into_path())
+                            .filter(|p| is_backup(p)),
+                    );
+                }
+            }
+            Kind::File => {
+                let (Some(parent), Some(name)) = (root.parent(), root.file_name()) else {
+                    continue;
+                };
+                let prefix = format!("{}.agentleaks-", name.to_string_lossy());
+                if let Ok(entries) = std::fs::read_dir(parent) {
+                    for entry in entries.flatten() {
+                        let n = entry.file_name().to_string_lossy().to_string();
+                        if n.starts_with(&prefix) && n.ends_with(".bak") && entry.path().is_file() {
+                            out.push(entry.path());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+/// Locate scrub backups under explicit paths.
+pub fn find_backups_under(paths: &[PathBuf]) -> Vec<PathBuf> {
+    let mut out: Vec<PathBuf> = Vec::new();
+    for path in paths {
+        if path.is_dir() {
+            out.extend(
+                WalkDir::new(path)
+                    .follow_links(false)
+                    .into_iter()
+                    .filter_map(Result::ok)
+                    .filter(|e| e.file_type().is_file())
+                    .map(|e| e.into_path())
+                    .filter(|p| is_backup(p)),
+            );
+        } else if path.is_file() && is_backup(path) {
+            out.push(path.clone());
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
 fn walk_files(root: &Path) -> Vec<PathBuf> {
     WalkDir::new(root)
         .follow_links(false)

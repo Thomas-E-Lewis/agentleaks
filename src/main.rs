@@ -61,6 +61,18 @@ enum Command {
         #[arg(long)]
         no_backup: bool,
     },
+    /// Delete the backup files created by scrub.
+    ///
+    /// Backups are byte-for-byte copies of the originals, so they still
+    /// contain the secrets. Once you have checked that a scrub went
+    /// well, purge removes them.
+    Purge {
+        /// Directories to search instead of auto-discovery
+        paths: Vec<PathBuf>,
+        /// Skip the confirmation prompt
+        #[arg(long, short = 'y')]
+        yes: bool,
+    },
     /// List the agent data stores agentleaks knows about and which exist here.
     Stores,
     /// List the detection rules.
@@ -191,11 +203,73 @@ fn run(command: Command) -> Result<i32> {
                 "note: scrubbing removes secrets from disk - if they were live, rotate them too"
                     .dimmed()
             );
+            println!(
+                "{}",
+                "note: the .bak backups still contain the originals - run `agentleaks purge` once you have checked the scrub"
+                    .dimmed()
+            );
             Ok(if failures > 0 || scan_errors > 0 {
                 2
             } else {
                 0
             })
+        }
+        Command::Purge { paths, yes } => {
+            if !yes && !std::io::stdin().is_terminal() {
+                anyhow::bail!(
+                    "stdin is not a terminal, so purging cannot be confirmed interactively - pass --yes"
+                );
+            }
+            let backups = if paths.is_empty() {
+                stores::find_backups(&home, &cwd)
+            } else {
+                stores::find_backups_under(&paths)
+            };
+            if backups.is_empty() {
+                println!("no scrub backups found");
+                return Ok(0);
+            }
+            let total: u64 = backups
+                .iter()
+                .filter_map(|b| std::fs::metadata(b).ok())
+                .map(|m| m.len())
+                .sum();
+            for b in &backups {
+                println!("  {}", report::display_path(b, &home));
+            }
+            println!();
+            println!(
+                "{} backup file(s), {} - these still contain the original secrets",
+                backups.len(),
+                human_bytes(total)
+            );
+            if !yes {
+                eprint!("Delete them? [y/N] ");
+                std::io::stderr().flush()?;
+                let mut answer = String::new();
+                std::io::stdin().read_line(&mut answer)?;
+                if !matches!(answer.trim(), "y" | "Y" | "yes" | "Yes") {
+                    println!("aborted - nothing was deleted");
+                    return Ok(0);
+                }
+            }
+            let mut failures = 0usize;
+            for b in &backups {
+                if let Err(err) = std::fs::remove_file(b) {
+                    failures += 1;
+                    eprintln!(
+                        "{} {}: {err}",
+                        "failed:".red().bold(),
+                        report::display_path(b, &home)
+                    );
+                }
+            }
+            println!(
+                "{} {} backup file(s) deleted",
+                "done:".green().bold(),
+                backups.len() - failures
+            );
+            Ok(if failures > 0 { 2 } else { 0 })
         }
         Command::Stores => {
             print_stores(&home, &cwd);

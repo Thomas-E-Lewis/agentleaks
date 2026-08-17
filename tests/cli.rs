@@ -202,6 +202,38 @@ fn scrub_refuses_noninteractive_without_yes() {
 }
 
 #[test]
+fn purge_deletes_scrub_backups() {
+    let tmp = tempfile::tempdir().unwrap();
+    let key = fake_anthropic_key();
+    let file = write_session(tmp.path(), &key);
+
+    agentleaks()
+        .args(["scrub", "--yes", "--no-color"])
+        .arg(tmp.path())
+        .assert()
+        .code(0);
+    let has_backup = |dir: &std::path::Path| {
+        std::fs::read_dir(dir)
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|e| e.file_name().to_string_lossy().ends_with(".bak"))
+    };
+    assert!(has_backup(tmp.path()), "scrub should have left a backup");
+
+    agentleaks()
+        .args(["purge", "--yes", "--no-color"])
+        .arg(tmp.path())
+        .assert()
+        .code(0)
+        .stdout(predicate::str::contains("deleted"));
+
+    assert!(!has_backup(tmp.path()), "purge must remove the backup");
+    // The scrubbed file itself is untouched.
+    let after = std::fs::read_to_string(&file).unwrap();
+    assert!(after.contains("[REDACTED:anthropic-api-key:"));
+}
+
+#[test]
 fn stores_command_lists_known_agents() {
     agentleaks()
         .args(["stores", "--no-color"])

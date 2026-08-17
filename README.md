@@ -57,7 +57,7 @@ Prebuilt binaries for Windows, macOS and Linux are on the [releases page](https:
 
 - Only the secret bytes are replaced, with an inert `[REDACTED:rule:fingerprint]` marker. Every other byte survives, so session files stay valid and `claude --resume` keeps working.
 - Every modified JSONL line is re-parsed before anything is written. If a change would corrupt a file, nothing is written.
-- Timestamped backups by default, atomic writes, `--dry-run` to preview, and it refuses to touch a file a live session is still writing to.
+- Timestamped backups by default, atomic writes, `--dry-run` to preview, and it refuses to touch a file a live session is still writing to. Backups are copies of the originals, so they still contain the secrets: once you have checked the scrub, `agentleaks purge` deletes them.
 - Scrubbing removes secrets from disk, it doesn't revoke them: rotate anything live.
 
 ## As a commit / CI gate
@@ -74,6 +74,7 @@ git diff --cached --name-only | agentleaks scan --stdin-paths
 |---|---|
 | `agentleaks scan [paths…]` | Scan agent stores (or explicit paths). Exit 1 on findings. |
 | `agentleaks scrub [paths…]` | Scan, confirm, redact in place. `--dry-run`, `--yes`, `--no-backup`. |
+| `agentleaks purge [paths…]` | Delete the backups scrub created, once you have checked the result. |
 | `agentleaks stores` | Show every known store and which exist here. |
 | `agentleaks rules` | List all detection rules. |
 
