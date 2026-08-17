@@ -1,0 +1,36 @@
+[package]
+name = "agentleaks"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Find and scrub secrets from AI coding agent session logs and configs (Claude Code, Codex, Gemini CLI, aider, Cursor and more)"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Thomas-E-Lewis/agentleaks"
+readme = "README.md"
+keywords = ["security", "secrets", "ai", "claude-code", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+dirs = "6"
+owo-colors = { version = "4", features = ["supports-colors"] }
+rayon = "1"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order", "arbitrary_precision"] }
+sha2 = "0.10"
+walkdir = "2"
+
+[target.'cfg(windows)'.dependencies]
+enable-ansi-support = "0.2"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
