@@ -34,7 +34,7 @@ pub fn pretty(findings: &[Finding], unmask: bool, home: &Path) {
         println!(
             "{} {}",
             display_path(file, home).bold(),
-            format!("({} — {})", first.agent, first.store_label).dimmed()
+            format!("({} - {})", first.agent, first.store_label).dimmed()
         );
         for f in file_findings {
             let shown = if unmask { f.secret.clone() } else { f.masked() };
@@ -67,12 +67,12 @@ pub fn summary(findings: &[Finding], files_scanned: usize) {
     println!();
     if findings.is_empty() {
         println!(
-            "{} scanned {files_scanned} files — no secrets found",
+            "{} scanned {files_scanned} files - no secrets found",
             "clean".green().bold()
         );
     } else {
         println!(
-            "{} {} finding(s) ({high} high) — {} unique secret(s) across {} file(s), {files_scanned} files scanned",
+            "{} {} finding(s) ({high} high) - {} unique secret(s) across {} file(s), {files_scanned} files scanned",
             "found".red().bold(),
             findings.len(),
             unique.len(),

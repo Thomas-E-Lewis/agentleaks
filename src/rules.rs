@@ -375,7 +375,7 @@ pub const LINE_RULES: &[Rule] = &[
 /// Rules matched against whole file content (may span lines).
 ///
 /// The body class `(?:[A-Za-z0-9+/=\s]|\\[nrt])*` matches base64 key
-/// material across real newlines and across JSON-escaped `\n` — and
+/// material across real newlines and across JSON-escaped `\n` - and
 /// nothing else. Bounding the body this way means a BEGIN marker can
 /// never pair with an unrelated END marker further down the file and
 /// swallow legitimate content between them.
@@ -510,7 +510,7 @@ pub fn is_allowlisted(secret: &str) -> bool {
     false
 }
 
-/// First 8 hex chars of SHA-256 — stable fingerprint for a secret value.
+/// First 8 hex chars of SHA-256 - stable fingerprint for a secret value.
 pub fn fingerprint(secret: &str) -> String {
     use sha2::{Digest, Sha256};
     let digest = Sha256::digest(secret.as_bytes());

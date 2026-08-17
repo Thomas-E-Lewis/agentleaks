@@ -122,7 +122,7 @@ fn run(command: Command) -> Result<i32> {
         } => {
             if !yes && !dry_run && !std::io::stdin().is_terminal() {
                 anyhow::bail!(
-                    "stdin is not a terminal, so scrubbing cannot be confirmed interactively — pass --yes (or --dry-run)"
+                    "stdin is not a terminal, so scrubbing cannot be confirmed interactively - pass --yes (or --dry-run)"
                 );
             }
             let files = resolve_targets(paths, false, &home, &cwd)?;
@@ -140,7 +140,7 @@ fn run(command: Command) -> Result<i32> {
                 return Ok(0);
             }
             if !yes && !confirm(&findings)? {
-                println!("aborted — no files were modified");
+                println!("aborted - no files were modified");
                 return Ok(0);
             }
 
@@ -164,7 +164,7 @@ fn run(command: Command) -> Result<i32> {
                             .map(|b| format!(" (backup: {})", report::display_path(b, &home)))
                             .unwrap_or_default();
                         println!(
-                            "{} {} — {} redaction(s){backup_note}",
+                            "{} {} - {} redaction(s){backup_note}",
                             "scrubbed".green().bold(),
                             report::display_path(file, &home),
                             outcome.redactions,
@@ -188,7 +188,7 @@ fn run(command: Command) -> Result<i32> {
             );
             println!(
                 "{}",
-                "note: scrubbing removes secrets from disk — if they were live, rotate them too"
+                "note: scrubbing removes secrets from disk - if they were live, rotate them too"
                     .dimmed()
             );
             Ok(if failures > 0 || scan_errors > 0 {
@@ -300,7 +300,7 @@ fn print_stores(home: &std::path::Path, cwd: &std::path::Path) {
                     .map(|m| m.len())
                     .sum();
                 println!(
-                    "  {} {base}/{} — {} ({} file(s), {})",
+                    "  {} {base}/{} - {} ({} file(s), {})",
                     "✓".green().bold(),
                     spec.rel,
                     spec.label,
@@ -310,7 +310,7 @@ fn print_stores(home: &std::path::Path, cwd: &std::path::Path) {
             }
             None => {
                 println!(
-                    "  {} {base}/{} — {}",
+                    "  {} {base}/{} - {}",
                     "·".dimmed(),
                     spec.rel.dimmed(),
                     spec.label.dimmed()

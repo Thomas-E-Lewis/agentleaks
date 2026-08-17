@@ -1,7 +1,7 @@
 //! Discovery of AI coding agent data stores on the local machine.
 //!
 //! Two kinds of locations exist: files whose *purpose* is to hold
-//! credentials (skipped by default — a finding there is by design), and
+//! credentials (skipped by default - a finding there is by design), and
 //! everything else: session transcripts, histories and configs where a
 //! secret is an accident. We scan the latter.
 
@@ -259,7 +259,7 @@ pub struct FoundStore {
 }
 
 fn is_credential_file(path: &Path, _home: &Path) -> bool {
-    // Component-wise suffix comparison — no syscalls, correct on both
+    // Component-wise suffix comparison - no syscalls, correct on both
     // separator conventions.
     CREDENTIAL_FILES
         .iter()
@@ -346,7 +346,7 @@ pub fn discover(home: &Path, project_dir: &Path) -> Vec<FoundStore> {
 
 /// Expand explicit path arguments into scannable files. Directories are
 /// walked recursively. Explicitly named files are always included, even
-/// credential files — naming a file is an unambiguous request. A path
+/// credential files - naming a file is an unambiguous request. A path
 /// that does not exist is a hard error: a CI gate must never pass
 /// because of a typo.
 pub fn expand_paths(paths: &[PathBuf], home: &Path) -> anyhow::Result<Vec<FoundFile>> {

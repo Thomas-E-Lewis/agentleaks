@@ -2,7 +2,7 @@
 //!
 //! Strategy: secrets are almost always plain ASCII tokens, so they appear
 //! byte-for-byte in the raw file even inside JSON strings. We therefore
-//! replace the exact secret bytes and touch nothing else — formatting,
+//! replace the exact secret bytes and touch nothing else - formatting,
 //! escapes and key order all survive, so agent session files stay valid
 //! and resumable. Only secrets that are split by JSON escape sequences
 //! (rare: passwords containing quotes or backslashes) require re-encoding
@@ -133,12 +133,12 @@ pub fn scrub_file(path: &Path, findings: &[Finding], opts: ScrubOptions) -> Resu
 
     // Freshness gate: agent session files are appended to by *live*
     // sessions. If the file changed since we read it, replacing it would
-    // silently destroy whatever was appended — refuse instead.
+    // silently destroy whatever was appended - refuse instead.
     let now_meta =
         std::fs::metadata(path).with_context(|| format!("re-checking {}", path.display()))?;
     if now_meta.len() != src_meta.len() || now_meta.modified().ok() != src_meta.modified().ok() {
         bail!(
-            "{} changed while scrubbing (an agent session may be writing to it) — close the session and re-run",
+            "{} changed while scrubbing (an agent session may be writing to it) - close the session and re-run",
             path.display()
         );
     }
@@ -160,7 +160,7 @@ pub fn scrub_file(path: &Path, findings: &[Finding], opts: ScrubOptions) -> Resu
     };
 
     // Write via a synced sibling temp file, then rename over the
-    // original, preserving its permissions — a crash mid-write can never
+    // original, preserving its permissions - a crash mid-write can never
     // leave a half-scrubbed session file.
     let tmp = path.with_file_name(format!(
         "{}.agentleaks-tmp",
